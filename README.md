@@ -1,4 +1,1 @@
-resume
-======
-
 Personal Resume
