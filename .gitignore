@@ -1,6 +1,3 @@
-*.class
+.sass-cache
+out
 
-# Package Files #
-*.jar
-*.war
-*.ear

@@ -1,0 +1,6 @@
+sourceRoot: src
+outputRoot: out
+dataRoot: src/data
+data: {
+  style: text(core.css)
+}

@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-Class-Path: freemarker-2.3.19.jar
-  scala-library.jar scala-swing.jar scala-dbc.jar
-Main-Class: me.shengmin.resume.ResumeBuilder
-

@@ -1,6 +1,0 @@
-<ivy-module version="2.0">
-    <info organisation="me.shengmin" module="resume"/>
-    <dependencies>
-        <dependency org="org.freemarker" name="freemarker" rev="2.3.19"/>
-    </dependencies>
-</ivy-module>
