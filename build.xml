@@ -9,9 +9,15 @@
       </exec>
     </target>
     
+    <target name="-build-data">
+    
+    </target>
+    
     <target name="-build" depends="-build-css">
-      <fmpp inheritConfiguration="${basedir}/base.fmpp" configuration="${basedir}/${version}.fmpp"
-        sourceFile="${basedir}/src/htm/resume.htm" outputFile="${basedir}/out/htm/shengmin-zhang-resume-${version}.htm">
+      <fmpp inheritConfiguration="${basedir}/base.fmpp" 
+        configuration="${basedir}/${version}.fmpp"
+        sourceFile="${basedir}/src/htm/resume.htm" 
+        outputFile="${basedir}/out/htm/shengmin-zhang-resume-${version}.htm">
       </fmpp>
     </target>
     

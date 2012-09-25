@@ -1,0 +1,10 @@
+shengmin: {
+  name: '<a target="_blank" href="http://www.shengmin.me/">shengmin.me</a>',
+  location: "&nbsp;",
+  date: "January 2012 - Present",
+  title: "Developer",
+  highlights: [
+    'Written in JavaScript and hosted on GAE',
+    'Display my resume in a timeline style'
+  ]
+}

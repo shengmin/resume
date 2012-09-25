@@ -1,0 +1,9 @@
+apprender: {
+  name: '<a target="_blank" href="http://apprender.codeplex.com/">AppRender.NET</a>',
+  location: "&nbsp;",
+  date: "December 2008 - June 2009",
+  title: "Developer",
+  highlights: [
+    "A set of fast, easy-to-use, and extendable ASP.NET server-side components for automatically managing the life cycle of a HTTP request, including caching, GZip compression, JSON serialization/deserialization, and method dispatching, using HTTP handlers and HTTP modules"
+  ]
+}

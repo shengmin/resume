@@ -1,0 +1,12 @@
+nexj: {
+  name: "NexJ Systems",
+  location: "Toronto, ON",
+  date: "January 2011 - April 2011",
+  title: "Framework Developer Intern",
+  highlights: [
+    "Fixed and resolved many NexJ framework bugs and performance issues",
+    "Re-designed and re-implemented the schedule control that offers better performance and usability",
+    "Developed a JavaScript tool on top of Closure Compiler that can batch insert logger statements to the specified functions to aid debugging",
+    "Proposed many practical ideas and design patterns to improve maintainability of the codebase"
+  ]
+}

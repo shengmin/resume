@@ -10,11 +10,58 @@ body {
   font-size: 14px;
   text-align: center; }
 
-.main-container {
+div.reset {
+  clear: both; }
+
+span.superscript {
+  font-size: xx-small;
+  vertical-align: super; }
+
+.resume {
   text-align: left;
-  width: 700px;
-  margin: 0 auto; }
-  .main-container .header-container {
-    text-align: center;
-    width: 100%;
-    padding: 20px 0 0 0; }
+  /* reset text-align */
+  width: 800px;
+  margin: 0 auto;
+  /* center the container horizontally */ }
+
+.contact {
+  text-align: center;
+  margin: 20px 0 0 0; }
+  .contact .name {
+    font-size: 24px;
+    font-weight: bold; }
+  .contact .column {
+    width: 266.66667px;
+    float: left; }
+
+.horizontal-line {
+  width: 100%;
+  height: 1px;
+  border-top: 1px solid; }
+
+.section {
+  margin-top: 10px; }
+  .section > .name {
+    font-weight: bold;
+    font-size: 18px;
+    text-transform: uppercase; }
+
+.entity li {
+  margin: 4px;
+  list-style-type: disc; }
+.entity ul {
+  margin: 4px 0; }
+.entity .header {
+  background-color: #D8DFEA;
+  border-style: solid;
+  border-width: 1px 0;
+  padding: 2px 5px; }
+  .entity .header .left-column, .entity .header .name {
+    float: left; }
+  .entity .header .right-column {
+    text-align: right; }
+  .entity .header .name {
+    font-weight: bold;
+    z-index: 1000; }
+    .entity .header .name a {
+      text-decoration: none; }

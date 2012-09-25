@@ -1,0 +1,12 @@
+oracle: {
+  name: "Oracle / Endeca",
+  location: "Boston, MA",
+  date: "September 2011 - December 2011",
+  title: "Software Engineering Intern",
+  highlights: [
+    "Implemented a cross-browser code editor for LQL query(a proprietary SQL-like query language) with content assist feature using JavaScript and HTML",
+    "Implemented a LQL query tokenizer and parser that can parse partial LQL query",
+    "Designed and implemented a set of Java APIs for configuring MDEX(a proprietary search engine) settings",
+    "Implemented browser UI for configuring MDEX settings using JavaScript"
+  ]
+}

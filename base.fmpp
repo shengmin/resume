@@ -2,5 +2,13 @@ sourceRoot: src
 outputRoot: out
 dataRoot: src/data
 data: {
-  style: text(core.css)
+  style: text(core.css),
+  tdd(skills.tdd),
+  tdd(google.tdd),
+  tdd(oracle.tdd),
+  tdd(nexj.tdd),
+  tdd(awards.tdd),
+  tdd(apprender.tdd),
+  tdd(shengmin.tdd),
+  tdd(uwaterloo.tdd)
 }

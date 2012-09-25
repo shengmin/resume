@@ -1,3 +1,5 @@
+$main-container-width: 800px;
+
 body, div, span {
   margin: 0;
   padding: 0;
@@ -12,17 +14,87 @@ body {
   text-align: center;
 }
 
-.main-container {
-  $main-container-width: 700px;
+div.reset {
+  clear: both;
+}
 
-  text-align: left;
-  width: $main-container-width;
-  margin: 0 auto;
+span.superscript {
+  font-size: xx-small;
+  vertical-align: super;
+}
+
+$resume-width: 800px;
+
+.resume {
+  text-align: left; /* reset text-align */
+  width: $resume-width;
+  margin: 0 auto; /* center the container horizontally */
+}
+
+.contact {
+  text-align: center;
+  margin: 20px 0 0 0;
   
-  .header-container {
-    text-align: center;
-    width: 100%;
-    padding: 20px 0 0 0;
+  .name {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .column {
+    width: $resume-width / 3;
+    float: left;
+  }
+}
+
+.horizontal-line {
+  width: 100%;
+  height: 1px;
+  border-top: 1px solid;
+}
+
+.section {
+  margin-top: 10px;
+  
+  > .name {
+    font-weight: bold;
+    font-size: 18px;
+    text-transform: uppercase;
+  }
+}
+
+.entity {
+  li {
+    margin: 4px;
+    list-style-type: disc;
+  }
+
+  ul {
+    margin: 4px 0;
+  }
+
+  .header {
+    background-color: #D8DFEA;
+    border-style: solid;
+    border-width: 1px 0;
+    padding: 2px 5px;
+    
+    .left-column {
+      float: left;
+    }
+    
+    .right-column {
+      text-align: right;
+    }
+    
+    .name {
+      @extend .left-column;
+      font-weight: bold;
+      z-index: 1000;
+      
+      a {
+        text-decoration: none;
+      }
+    }
   }
 }
 
