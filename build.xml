@@ -3,17 +3,16 @@
 
     <property name="configuration.base" location="${basedir}/base.fmpp" />
     
-    <target name="-build-css" description="Build CSS from SCSS">
+    <target name="build-css" description="Build CSS from SCSS">
       <exec executable="sass.bat" osfamily="Windows">
+        <arg value="src/scss/core.scss:src/data/core.css" />
+      </exec>
+      <exec executable="sass" osfamily="Unix">
         <arg value="src/scss/core.scss:src/data/core.css" />
       </exec>
     </target>
     
-    <target name="-build-data">
-    
-    </target>
-    
-    <target name="-build" depends="-build-css">
+    <target name="-build" depends="build-css">
       <fmpp inheritConfiguration="${basedir}/base.fmpp" 
         configuration="${basedir}/${version}.fmpp"
         sourceFile="${basedir}/src/htm/resume.htm" 

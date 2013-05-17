@@ -5,6 +5,6 @@ shengmin: {
   title: "Developer",
   highlights: [
     'Written in JavaScript and hosted on GAE',
-    'Display my resume in a timeline style'
+    'Display my resume using timeline'
   ]
 }
