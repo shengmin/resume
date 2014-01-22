@@ -4,7 +4,7 @@ google: {
   date: "May 2012 - August 2012",
   title: "Software Engineering Intern",
   highlights: [
-    "Implemented infinite scroll for DoubleClick for Publishers GWT cell table that is being used by millions of users",
+    "Implemented infinite scroll for DoubleClick for Publishers GWT cell table",
     "Implemented client-side range cache to improve infinite scroll performance",
     "Pushed out first commit for review during the first week of my internship"
   ]
