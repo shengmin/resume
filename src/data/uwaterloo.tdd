@@ -2,7 +2,7 @@ uwaterloo: {
   name: 'University of Waterloo',
   location: 'Waterloo, ON',
   date: 'September 2009 - April 2014 (expected)',
-  title: 'Candidate for Bachelor of Honors Computer Science',
+  title: 'Candidate for Honors Bachelor of Computer Science',
   highlights: [
     'Finished Operating Systems, Algorithms, Principles of Programming Languages, Computer Networks, Introduction to Artificial Intelligence, Foundations of Sequential Programs, Introduction to Database Management'
   ]
