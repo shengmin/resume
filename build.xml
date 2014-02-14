@@ -2,7 +2,7 @@
     <taskdef name="fmpp" classname="fmpp.tools.AntTask" />
 
     <property name="configuration.base" location="${basedir}/base.fmpp" />
-    
+
     <target name="build-css" description="Build CSS from SCSS">
       <exec executable="sass.bat" osfamily="Windows">
         <arg value="src/scss/core.scss:src/data/core.css" />
@@ -11,32 +11,26 @@
         <arg value="src/scss/core.scss:src/data/core.css" />
       </exec>
     </target>
-    
+
     <target name="-build" depends="build-css">
-      <fmpp inheritConfiguration="${basedir}/base.fmpp" 
+      <fmpp inheritConfiguration="${basedir}/base.fmpp"
         configuration="${basedir}/${version}.fmpp"
-        sourceFile="${basedir}/src/htm/resume.htm" 
+        sourceFile="${basedir}/src/htm/resume.htm"
         outputFile="${basedir}/out/htm/shengmin-zhang-resume-${version}.htm">
       </fmpp>
     </target>
-    
+
     <target name="build-general" description="Build general version of the resume">
       <antcall target="-build">
         <param name="version" value="general" />
       </antcall>
     </target>
-    
-    <target name="build-google" description="Build resume for Google">
-      <antcall target="-build">
-        <param name="version" value="google" />
-      </antcall>
+
+    <target name="build-all" depends="build-general">
     </target>
-    
-    <target name="build-all" depends="build-general, build-google">
-    </target>
-    
+
     <target name="clean">
       <delete dir="${basedir}/out" />
     </target>
-    
+
 </project>

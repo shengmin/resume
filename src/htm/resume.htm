@@ -40,7 +40,7 @@
       <div class="resume">
         <div class="contact">
           <div class="name">ShengMin Zhang</div>
-          <div class="column">                
+          <div class="column">
             <div>7007 190B Street</div>
             <div>Edmonton, AB T5T 5Z6, Canada</div>
           </div>
@@ -54,23 +54,23 @@
           </div>
           <div class="reset"></div>
         </div>
-        
-        <@buildHighlightsSection 
+
+        <@buildHighlightsSection
           name = "Skills Summary"
           highlights = skills />
-                
+
         <div class="section">
           <div class="name">Work Experience</div>
           <@buildEntity entity = microsoft />
+          <@buildEntity entity = daigouge />
           <@buildEntity entity = facebook />
           <@buildEntity entity = google />
-          <@buildEntity entity = oracle />
         </div>
-        
-        <@buildHighlightsSection 
+
+        <@buildHighlightsSection
           name = "Awards and Achievements"
           highlights = awards />
-        
+
         <div class="section">
           <div class="name">Education</div>
           <@buildEntity entity = uwaterloo />

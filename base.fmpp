@@ -12,5 +12,6 @@ data: {
   tdd(shengmin.tdd),
   tdd(uwaterloo.tdd),
   tdd(facebook.tdd),
-  tdd(microsoft.tdd)
+  tdd(microsoft.tdd),
+  tdd(daigouge.tdd)
 }
