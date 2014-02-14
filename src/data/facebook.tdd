@@ -4,6 +4,7 @@ facebook: {
   date: "January 2013 - May 2013",
   title: "Software Engineer Intern",
   highlights: [
+    "Quickly grasped Facebook frontend codebase and coding idioms",
     "Implemented UI components for fitness collection including stacked-bar chart, hovercards, color gradient, and pager",
     'Collaborated on building <a target="_blank" href="https://www.facebook.com/Shengmin.Zhang/fitness">fitness collection</a> using aforementioned UI components',
     'Selected to present my Hackathon project to Facebook CEO <a target="_blank" href="https://www.facebook.com/zuck">Mark Zuckerberg</a> in person'

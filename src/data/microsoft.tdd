@@ -4,10 +4,10 @@ microsoft: {
   date: "September 2013 - December 2013",
   title: "Software Development Engineer Intern",
   highlights: [
+    "Quickly grasped Bing UX stack and became productive in a week",
     "Integrated a new data source into Bing",
     "Built a web scraper that scrapes data from a specific external data source using its API",
     "Built a data processor that extracts structural information from the raw data source",
-    "Implemented UI components to display the structural information on the first result page of Bing",
-    "The feature was launched as an experiment to 2% of the users"
+    "Implemented UI components to display the structural information on the first result page of Bing"
   ]
 }
