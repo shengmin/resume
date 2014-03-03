@@ -2,11 +2,11 @@
   <div class="section">
     <div class="name">${name}</div>
     <div class="horizontal-line"></div>
-    <ul>
+    <ol>
       <#list highlights as highlight>
         <li>${highlight}</li>
       </#list>
-    </ul>
+    </ol>
   </div>
 </#macro>
 
@@ -18,11 +18,11 @@
       <div class="left-column">${entity.title}</div>
       <div class="right-column">${entity.date}</div>
     </div>
-    <ul>
+    <ol>
       <#list entity.highlights as highlight>
         <li>${highlight}</li>
       </#list>
-    </ul>
+    </ol>
   </div>
 </#macro>
 
