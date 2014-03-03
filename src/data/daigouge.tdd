@@ -4,7 +4,7 @@ daigouge: {
   date: "May 2013 - September 2013",
   title: "Co-founder and developer",
   highlights: [
-    "My first start-up project that allows people to buy products directly from taobao.com (the largest shopping website in the world) by simply pasting in a taobao.com URL",
+    "A website that allows people to order products directly from taobao.com (the largest shopping website in China) from Canada by simply pasting in a taobao.com URL",
     "Integrated with TaoBao API to fetch product information automatically",
     "VeloCity Demo Day finalist in spring 2013"
   ]
