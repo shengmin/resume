@@ -1,10 +1,11 @@
 daigouge: {
-  name: "daigouge.com",
+  name: "DaiGouGe",
   location: "Waterloo, ON",
   date: "May 2013 - September 2013",
   title: "Co-founder and developer",
   highlights: [
-    "A website that allows people to order products directly from taobao.com (the largest shopping website in China) from Canada by simply pasting in a taobao.com URL",
+    "Business that allows users to order products directly from taobao.com (the largest shopping platform in China) from Canada by simply pasting in a taobao.com URL to our website",
+    "We handle product ordering and shipping",
     "Integrated with TaoBao API to fetch product information automatically",
     "VeloCity Demo Day finalist in spring 2013"
   ]
