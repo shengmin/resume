@@ -515,8 +515,9 @@ var resume = [
     } else if (key.name === 'return' || key.name === 'line-feed') {
       // User has pressed <Enter>, start outputing the resume
       input.events.removeListener('keypress', onEnterPressed);
-      printer.clearScreen();
-      printer.printScreen(0, resumeLines);
+      printer
+        .clearScreen()
+        .printScreen(0, resumeLines);
       input.events.on('keypress', onKeyPressed);
     }
   }
@@ -524,6 +525,12 @@ var resume = [
 
   var onKeyPressed = (function() {
     var startIndex = 0;
+
+    stdout.on('resize', function() {
+      printer
+        .clearScreen()
+        .printScreen(startIndex, resumeLines);
+    });
 
     return function(key) {
       if (key.isControl && key.name === 'c') {
@@ -534,14 +541,16 @@ var resume = [
       } else  if (key.name === 'up') {
         if (startIndex > 0) {
           startIndex--;
-          printer.clearScreen();
-          printer.printScreen(startIndex, resumeLines);
+          printer
+            .clearScreen()
+            .printScreen(startIndex, resumeLines);
         }
       } else if (key.name === 'down') {
         if (startIndex < resumeLines.length - 1) {
           startIndex++;
-          printer.clearScreen();
-          printer.printScreen(startIndex, resumeLines);
+          printer
+            .clearScreen()
+            .printScreen(startIndex, resumeLines);
         } else {
           printer.reset();
           stdin.pause();
