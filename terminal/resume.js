@@ -166,8 +166,6 @@ RawInputStream.prototype._onData = function(data) {
 function ResumePrinter() {
   // Make sure line wrap is disabled
   stdout.write('\u001b[7l');
-  // Set the background color to black
-  stdout.write('\u001b[40m');
 }
 
 ResumePrinter.prototype.reset = function() {
@@ -212,13 +210,13 @@ ResumePrinter.prototype.printFormattedLine = function(line, color) {
 }
 
 ResumePrinter.prototype._createLine = function(result, _) {
-  result.push(yellowText('-'));
+  result.push(yellowText('\u2500'));
   return result;
 }
 
 ResumePrinter.prototype.printScreen = function(startIndex, lines) {
   var self = this;
-  var separator = new Range(0, stdout.columns / 2).foldLeft([], this._createLine);
+  var separator = new Range(0, stdout.columns).foldLeft([], this._createLine);
 
   var header = [
     separator,
@@ -243,7 +241,7 @@ ResumePrinter.prototype.printScreen = function(startIndex, lines) {
     var color = TEXT_COLORS[year % TEXT_COLORS.length];
 
     if (line instanceof HorizontalLine) {
-      line = separator;
+      line = new Range(0, stdout.columns - 8).foldLeft([], this._createLine);
     }
 
     if (year != lastLineYear) {
@@ -283,7 +281,7 @@ function yellowText(text) { return colorText(text, '\u001b[33m'); }
 function magentaText(text) { return colorText(text, '\u001b[35m'); }
 function boldText(text) { return new FormattedText(text, '\u001b[1m', '\u001b[22m'); }
 function underlineText(text) { return new FormattedText(text, '\u001b[4m', '\u001b[24m'); };
-function keyword(text) { return boldText(greenText(text)); }
+function keyword(text) { return greenText(text); }
 function indent(count) {
   return new Range(0, count).foldLeft('', function(result, _) {
     return result + ' ';
@@ -464,7 +462,7 @@ var resume = [
     new ResumePrinter().clearScreen();
 
   var prologue = [
-    'Hi, I\'m ShengMin\'s assistant. You are reading his terminal version of resume.',
+    'Hi, I\'m ShengMin\'s assistant. You are reading his resume.',
     'Please remember the following control keys:',
     '\u001b[32mScroll down\u001b[39m: \u001b[33m<Down>\u001b[39m',
     '\u001b[32mScroll up\u001b[39m: \u001b[33m<Up>\u001b[39m',

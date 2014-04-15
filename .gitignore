@@ -4,3 +4,7 @@ core.css
 
 # Node.js
 node_modules/
+
+# General
+*~
+
