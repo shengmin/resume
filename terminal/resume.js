@@ -172,7 +172,13 @@ RawInputStream.prototype._onData = function(data) {
 function ResumePrinter() {
   // Make sure line wrap is disabled
   stdout.write('\u001b[7l');
+  // Set the background color to black
+  stdout.write('\u001b[40m');
 }
+
+ResumePrinter.prototype.reset = function() {
+  return this.write('\u001b[0m');
+};
 
 ResumePrinter.prototype.clearScreen = function() {
   return this
@@ -212,21 +218,21 @@ ResumePrinter.prototype.printFormattedLine = function(line, color) {
 }
 
 ResumePrinter.prototype._createLine = function(result, _) {
-  result.push(blueText('\u2500'));
+  result.push(yellowText('-'));
   return result;
 }
 
 ResumePrinter.prototype.printScreen = function(startIndex, lines) {
   var self = this;
-  var line = new Range(0, stdout.columns).foldLeft([], this._createLine);
+  var separator = new Range(0, stdout.columns / 2).foldLeft([], this._createLine);
 
   var header = [
-    line,
+    separator,
     [' ', yellowText('Name:'), '         ShengMin Zhang'],
     [' ', greenText('Email:'), '        me@shengmin.me'],
     [' ', cyanText('GitHub:'), '       https://github.com/shengmin'],
-    [' ', blueText('HackerRank:'), '   https://www.hackerrank.com/shengmin'],
-    line
+    [' ', magentaText('HackerRank:'), '   https://www.hackerrank.com/shengmin'],
+    separator
   ];
 
   header.forEach(function(line) {
@@ -243,7 +249,7 @@ ResumePrinter.prototype.printScreen = function(startIndex, lines) {
     var color = TEXT_COLORS[year % TEXT_COLORS.length];
 
     if (line instanceof HorizontalLine) {
-      line = new Range(0, stdout.columns - 8).foldLeft([], this._createLine);
+      line = separator;
     }
 
     if (year != lastLineYear) {
@@ -279,8 +285,8 @@ function HorizontalLine() {}
 function colorText(text, color) { return new FormattedText(text, color, '\u001b[39m'); }
 function greenText(text) { return colorText(text, '\u001b[32m'); }
 function cyanText(text) { return colorText(text, '\u001b[36m'); }
-function blueText(text) { return colorText(text, '\u001b[34m'); }
 function yellowText(text) { return colorText(text, '\u001b[33m'); }
+function magentaText(text) { return colorText(text, '\u001b[35m'); }
 function boldText(text) { return new FormattedText(text, '\u001b[1m', '\u001b[22m'); }
 function underlineText(text) { return new FormattedText(text, '\u001b[4m', '\u001b[24m'); };
 function keyword(text) { return boldText(greenText(text)); }
@@ -290,12 +296,13 @@ function indent(count) {
   });
 }
 var HORIZONTAL_LINE = new HorizontalLine();
-var TEXT_COLORS = [ yellowText, greenText, cyanText, blueText, cyanText, greenText ];
+var TEXT_COLORS = [ yellowText, greenText, cyanText, magentaText ];
 
 var resume = [
   {
     year: 2005,
     story: [
+      [],
       ['This is the year where my CS "career" took off'],
       [],
       ['I started'],
@@ -304,13 +311,15 @@ var resume = [
       [' - learning ', keyword('CSS')],
       [],
       ['The first website I have ever built is still live:'],
-      [indent(2), yellowText('http://yuss06.150m.com/others_htm/inside_index.htm')]
+      [indent(2), yellowText('http://yuss06.150m.com/others_htm/inside_index.htm')],
+      []
     ]
   },
   {
     year: 2007,
     story: [
       HORIZONTAL_LINE,
+      [],
       ['Then I realized HTML alone is not enough'],
       ['  for building complex websites'],
       [],
@@ -326,13 +335,15 @@ var resume = [
       [' - developing ', keyword('ASP.NET'), ' applications'],
       [' - learning ', keyword('SQL')],
       [' - using ', keyword('jQuery')],
-      [' - using ', keyword('Visual Studio')]
+      [' - using ', keyword('Visual Studio')],
+      []
     ]
   },
   {
     year: 2009,
     story: [
       HORIZONTAL_LINE,
+      [],
       ['I started studying ', keyword('Computer Science'), ' at ', keyword('University of Waterloo')],
       [],
       ['I started programming in ', keyword('Java')],
@@ -342,13 +353,15 @@ var resume = [
       ['I started'],
       [' - learning ', keyword('C/C++')],
       [' - learning ', keyword('Scheme')],
-      [' - using ', keyword('Eclipse')]
+      [' - using ', keyword('Eclipse')],
+      []
     ]
   },
   {
     year: 2010,
     story: [
       HORIZONTAL_LINE,
+      [],
       ['I started learning ', keyword('algorithms'), ' and ', keyword('data structures')],
       ['  and competing in algorithm contests'],
       [],
@@ -363,13 +376,15 @@ var resume = [
       [' - learning ', keyword('shell scripting')],
       [' - using ', keyword('Apache Ant')],
       [' - using ', keyword('Git')],
-      [' - working with ', keyword('Unix-like system')]
+      [' - working with ', keyword('Unix-like system')],
+      []
     ]
   },
   {
     year: 2011,
     story: [
       HORIZONTAL_LINE,
+      [],
       ['I achieved ', keyword('6th'), ' place at ', keyword('UW local ACM programming contest')],
       [],
       ['I interned at ', keyword('NexJ')],
@@ -382,13 +397,15 @@ var resume = [
       [],
       ['I started'],
       [' - using ', keyword('Google App Engine'), ' to host my personal website'],
-      [' - competing on ', keyword('HackerRank'), ' where now I have ', keyword('O(1) ranking (top 1%)')]
+      [' - competing on ', keyword('HackerRank'), ' where now I have ', keyword('O(1) ranking (top 1%)')],
+      []
     ]
   },
   {
     year: 2012,
     story: [
       HORIZONTAL_LINE,
+      [],
       ['I achieved ', keyword('12th'), ' place at ', keyword('UW local ACM programming contest')],
       [],
       ['I finally landed an internship with ', keyword('Google')],
@@ -403,13 +420,15 @@ var resume = [
       [' - strong knowledge and experience'],
       [],
       ['I took ', keyword('CS 442: Principles of Programming Languages')],
-      [' - I gained a lot of experience with functional programming']
+      [' - I gained a lot of experience with functional programming'],
+      []
     ]
   },
   {
     year: 2013,
     story: [
       HORIZONTAL_LINE,
+      [],
       ['I interned at ', keyword('Facebook')],
       [' - I developed UI components for fitness collection'],
       [' - I was lucky enough to be selected to present'],
@@ -424,27 +443,31 @@ var resume = [
       [' - I helped integrate a data source into Bing search result page'],
       [' - I gained experience with ', keyword('TypeScript')],
       [],
-      ['I started developing on ', keyword('Node.js')]
+      ['I started developing on ', keyword('Node.js')],
+      []
     ]
   },
   {
     year: 2014,
     story: [
       HORIZONTAL_LINE,
+      [],
       ['This is the year I\'m graduating'],
       [],
       ['I took ', keyword('CS 444: Compiler Construction')],
       [' - I gained a lot of working experience with ', keyword('Scala')],
       [],
-      ['I started using ', keyword('Dart')]
+      ['I started using ', keyword('Dart')],
+      []
     ]
   }
 ];
 
 // main
 (function() {
-  var input = new RawInputStream(stdin);
-  var printer = new ResumePrinter(stdout);
+  var input = new RawInputStream();
+  var printer =
+    new ResumePrinter().clearScreen();
 
   var prologue = [
     'Hi, I\'m ShengMin\'s assistant. You are reading his terminal version of resume.',
