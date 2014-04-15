@@ -86,7 +86,7 @@ var RawInputStream = newType(function() {
   stdin.setEncoding('utf8');
   stdin.on('data', this._onData.bind(this));
   stdin.resume();
-})
+});
 
 RawInputStream.prototype._onData = function(data) {
   // A modified and stripped down version of https://github.com/TooTallNate/keypress
@@ -153,19 +153,13 @@ RawInputStream.prototype._onData = function(data) {
       }
     }
 
-    if (key.isControl && key.name === 'c') {
-      // Quit the program
-      stdin.pause();
-      this.events.removeAllListeners();
-    } else {
-      /**
-       * @event Terminal#keypress
-       * @type {Object}
-       * @property {boolean} isControl - Indicates whether the 'ctrl' key is pressed
-       * @property {String} name - Name of the key pressed
-       */
-      this.events.emit('keypress', key);
-    }
+    /**
+     * @event Terminal#keypress
+     * @type {Object}
+     * @property {boolean} isControl - Indicates whether the 'ctrl' key is pressed
+     * @property {String} name - Name of the key pressed
+     */
+    this.events.emit('keypress', key);
   }
 };
 
@@ -177,7 +171,7 @@ function ResumePrinter() {
 }
 
 ResumePrinter.prototype.reset = function() {
-  return this.write('\u001b[0m');
+  return this.write('\u001b[0m').clearScreen();
 };
 
 ResumePrinter.prototype.clearScreen = function() {
@@ -513,7 +507,12 @@ var resume = [
   })();
 
   function onEnterPressed(key) {
-    if (key.name === 'return' || key.name === 'line-feed') {
+    if (key.isControl && key.name === 'c') {
+        // Quit the program
+        input.events.removeAllListeners();
+        printer.reset();
+        stdin.pause();
+    } else if (key.name === 'return' || key.name === 'line-feed') {
       // User has pressed <Enter>, start outputing the resume
       input.events.removeListener('keypress', onEnterPressed);
       printer.clearScreen();
@@ -527,7 +526,12 @@ var resume = [
     var startIndex = 0;
 
     return function(key) {
-      if (key.name === 'up') {
+      if (key.isControl && key.name === 'c') {
+        // Quit the program
+        input.events.removeAllListeners();
+        printer.reset();
+        stdin.pause();
+      } else  if (key.name === 'up') {
         if (startIndex > 0) {
           startIndex--;
           printer.clearScreen();
@@ -539,7 +543,7 @@ var resume = [
           printer.clearScreen();
           printer.printScreen(startIndex, resumeLines);
         } else {
-          printer.clearScreen();
+          printer.reset();
           stdin.pause();
         }
       }
