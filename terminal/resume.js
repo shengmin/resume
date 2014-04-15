@@ -4,42 +4,54 @@ var os = require('os');
 var util = require("util");
 var StringDecoder = require('string_decoder').StringDecoder;
 var EventEmitter = require("events").EventEmitter;
-
 var inherits = util.inherits;
 var EOL = os.EOL;
 var stdin = process.stdin;
 var stdout = process.stdout;
+var stringDecoder = new StringDecoder('utf8');
+var functionKeyCodeRegex =
+  /^(?:\x1b+)(O|N|\[|\[\[)(?:(\d+)(?:;(\d+))?([~^$])|(?:1;)?(\d+)?([a-zA-Z]))/;
+
+/**
+ * Whether {@link object} is a {@link String}
+ */
+function isString(object) { return Object.prototype.toString.call(object) === '[object String]'; }
+
+/**
+ * Create a new type with the given {@link traits} and {@link baseType}
+ */
+function newType(constructor, traits, baseType) {
+  if (baseType) {
+    inherits(constructor, baseType);
+  }
+
+  if (traits) {
+    var typePrototype = constructor.prototype;
+    traits.forEach(function(trait) {
+      Object.getOwnPropertyNames(trait).forEach(function(name) {
+        typePrototype[name] = trait[name];
+      });
+    });
+  }
+
+  return constructor;
+}
 
 /**
  * Thrown when user calls an abstract method
  * @class
  */
-function MethodNotImplementedError(name) {
+var MethodNotImplementedError = newType(function(name) {
   this.name = name;
-}
+}, [], Error);
 
-inherits(MethodNotImplementedError, Error);
-
+/**
+ * Defines an abstract method
+ */
 function newAbstractMethod(name) {
   return function() {
     throw new MethodNotImplementedError(name);
   };
-}
-
-function isString(object) { return Object.prototype.toString.call(object) === '[object String]'; }
-
-/**
- * Create a new type with the given traits
- */
-function newType(type, traits) {
-  var typePrototype = type.prototype;
-  traits.forEach(function(trait) {
-    Object.getOwnPropertyNames(trait).forEach(function(name) {
-      typePrototype[name] = trait[name];
-    });
-  });
-
-  return type;
 }
 
 var Iterable = {
@@ -58,39 +70,27 @@ var Range = newType(function (start, end) {
   this.end = end;
 }, [Iterable]);
 
-Range.prototype.forEach = function(f) {
+Range.prototype.forEach = function(callback) {
   for (var i = this.start, end = this.end; i < end; i++) {
-    f(i);
+    callback(i);
   }
-}
+};
 
 /**
- * Represents the terminal
+ * Represents raw terminal stream
+ * @class
  */
-function Terminal() {
-  EventEmitter.call(this);
-
+var RawInputStream = newType(function() {
+  this.events = new EventEmitter();
   stdin.setRawMode(true);
   stdin.setEncoding('utf8');
   stdin.on('data', this._onData.bind(this));
   stdin.resume();
-}
+})
 
-util.inherits(Terminal, EventEmitter);
-
-Terminal.prototype.clearScreen = function() {
-  return this
-    .write('\u001b[2J')
-    .write('\u001b[H');
-};
-
-Terminal.prototype._stringDecoder = new StringDecoder('utf8');
-Terminal.prototype._functionKeyCodeRegex =
-  /^(?:\x1b+)(O|N|\[|\[\[)(?:(\d+)(?:;(\d+))?([~^$])|(?:1;)?(\d+)?([a-zA-Z]))/;
-
-Terminal.prototype._onData = function(data) {
+RawInputStream.prototype._onData = function(data) {
   // A modified and stripped down version of https://github.com/TooTallNate/keypress
-  var sequence = this._stringDecoder.write(data);
+  var sequence = stringDecoder.write(data);
   if (sequence) {
     if (Buffer.isBuffer(sequence)) {
       if (sequence[0] > 127 && sequence[1] === undefined) {
@@ -117,7 +117,7 @@ Terminal.prototype._onData = function(data) {
       // ctrl + letter
       key.name = String.fromCharCode(sequence.charCodeAt(0) + 'a'.charCodeAt(0) - 1);
       key.isControl = true;
-    } else if (parts = this._functionKeyCodeRegex.exec(sequence)) {
+    } else if (parts = functionKeyCodeRegex.exec(sequence)) {
       // ansi escape sequence
 
       // reassemble the key code leaving out leading \x1b's,
@@ -156,7 +156,7 @@ Terminal.prototype._onData = function(data) {
     if (key.isControl && key.name === 'c') {
       // Quit the program
       stdin.pause();
-      this.removeAllListeners();
+      this.events.removeAllListeners();
     } else {
       /**
        * @event Terminal#keypress
@@ -164,17 +164,28 @@ Terminal.prototype._onData = function(data) {
        * @property {boolean} isControl - Indicates whether the 'ctrl' key is pressed
        * @property {String} name - Name of the key pressed
        */
-      this.emit('keypress', key);
+      this.events.emit('keypress', key);
     }
   }
 };
 
-Terminal.prototype.write = function(text) {
-  stdout.write(text);
-  return this;
+function ResumePrinter() {
+  // Make sure line wrap is disabled
+  stdout.write('\u001b[7l');
 }
 
-Terminal.prototype.writeLine = function(text) {
+ResumePrinter.prototype.clearScreen = function() {
+  return this
+    .write('\u001b[2J')
+    .write('\u001b[H');
+};
+
+ResumePrinter.prototype.write = function(text) {
+  stdout.write(text);
+  return this;
+};
+
+ResumePrinter.prototype.writeLine = function(text) {
   if (text !== undefined) {
     this.write(text);
   }
@@ -182,6 +193,69 @@ Terminal.prototype.writeLine = function(text) {
 };
 
 
+ResumePrinter.prototype.printFormattedText = function(text, color) {
+  if (text.formattedText) {
+    // It's a {@link FormattedText}
+    this.write(text.formattedText());
+  } else if (isString(text)) {
+    // It's a regular {@link String}
+    this.write(text);
+  }
+  return this;
+};
+
+ResumePrinter.prototype.printFormattedLine = function(line, color) {
+  for (var i = 0, count = line.length; i < count; i++) {
+    this.printFormattedText(line[i], color);
+  }
+  return this.write(EOL);
+}
+
+ResumePrinter.prototype._createLine = function(result, _) {
+  result.push(blueText('\u2500'));
+  return result;
+}
+
+ResumePrinter.prototype.printScreen = function(startIndex, lines) {
+  var self = this;
+  var line = new Range(0, stdout.columns).foldLeft([], this._createLine);
+
+  var header = [
+    line,
+    [' ', yellowText('Name:'), '         ShengMin Zhang'],
+    [' ', greenText('Email:'), '        me@shengmin.me'],
+    [' ', cyanText('GitHub:'), '       https://github.com/shengmin'],
+    [' ', blueText('HackerRank:'), '   https://www.hackerrank.com/shengmin'],
+    line
+  ];
+
+  header.forEach(function(line) {
+    self.printFormattedLine(line);
+  });
+
+  var lastLineYear = -1;
+  var rowCount = stdout.rows - 1 - header.length;
+  var lineCount = lines.length;
+  for (var i = startIndex, j = 0; j < rowCount && i < lineCount; i++, j++) {
+    var item = lines[i];
+    var line = item.line;
+    var year = item.year;
+    var color = TEXT_COLORS[year % TEXT_COLORS.length];
+
+    if (line instanceof HorizontalLine) {
+      line = new Range(0, stdout.columns - 8).foldLeft([], this._createLine);
+    }
+
+    if (year != lastLineYear) {
+      line = [' ', underlineText(boldText(color(item.year))), ' ', boldText(color('\u2502')), ' '].concat(line);
+      lastLineYear = year;
+    } else {
+      line = ['      ', boldText(color('\u2502')), ' '].concat(line);
+    }
+
+    this.printFormattedLine(line, color);
+  }
+}
 
 /**
  * Represents formatted text
@@ -199,23 +273,8 @@ function FormattedText(text, on, off) {
 FormattedText.prototype.formattedText = function() { return this.on + this.text + this.off; };
 FormattedText.prototype.toString = function() { return this.formattedText(); };
 
-/**
- * Represents text with color
- * @class
- */
-function ColoredText(text, color) {
-  FormattedText.call(this, text);
-  this.color = color;
-}
-
-inherits(ColoredText, FormattedText);
-
-ColoredText.prototype.formattedText = function() { return this.color + this.text + '\u001b[39m'; };
-
 function HorizontalLine() {}
-function CurrentColor(text) {
-  this.text = text;
-}
+
 // Factory methods for creating text with different color
 function colorText(text, color) { return new FormattedText(text, color, '\u001b[39m'); }
 function greenText(text) { return colorText(text, '\u001b[32m'); }
@@ -224,52 +283,14 @@ function blueText(text) { return colorText(text, '\u001b[34m'); }
 function yellowText(text) { return colorText(text, '\u001b[33m'); }
 function boldText(text) { return new FormattedText(text, '\u001b[1m', '\u001b[22m'); }
 function underlineText(text) { return new FormattedText(text, '\u001b[4m', '\u001b[24m'); };
+function keyword(text) { return boldText(greenText(text)); }
 function indent(count) {
   return new Range(0, count).foldLeft('', function(result, _) {
     return result + ' ';
   });
 }
 var HORIZONTAL_LINE = new HorizontalLine();
-function currentColor(text) { return new FormattedText(text, '', ''); }
-function keyword(text) { return boldText(greenText(text)); }
-
-function printFormattedText(text, color) {
-  if (text.formattedText) {
-    // It's a {@link FormattedText}
-    stdout.write(text.formattedText());
-  } else if (isString(text)) {
-    // It's a regular {@link String}
-    stdout.write(text);
-  }
-}
-
-function printFormattedLine(line, color) {
-  for (var i = 0, count = line.length; i < count; i++) {
-    printFormattedText(line[i], color);
-  }
-  stdout.write(EOL);
-}
-
-function printFormattedLines(lines) {
-  for (var i = 0, lineCount = lines.length; i < lineCount; i++) {
-    var line = lines[i];
-    for (var j = 0, segmentCount = line.length; j < segmentCount; j++) {
-      printFormattedText(line[j]);
-    }
-    stdout.write(EOL);
-  }
-}
-
-
-// var r = [
-//   { year: 2005, line: ['abcedefg'] }
-// ];
-
-// for (var i = 2005; i <= 2014; i++) {
-//   for (var j = 0; j < 30; j++) {
-//     r.push({ year: i, line: [i + ' abcdefghijklmn ' + j] });
-//   }
-// }
+var TEXT_COLORS = [ yellowText, greenText, cyanText, blueText, cyanText, greenText ];
 
 var resume = [
   {
@@ -294,9 +315,8 @@ var resume = [
       ['  for building complex websites'],
       [],
       ['I started programming in ', keyword('JavaScript')],
-      [' - I speak JavaScript'],
       [' - Expert knowledge and experience'],
-      [' - With Node.js, it became my primary scripting language'],
+      [' - With ', keyword('Node.js'), ' it became my primary scripting language'],
       [],
       ['I started programming in ', keyword('C#')],
       [' - The first programming language I have mastered'],
@@ -336,8 +356,8 @@ var resume = [
       [' - ', keyword('11th'), ' place at ', keyword('UW local ACM programming contest')],
       [' - ', keyword('3rd'), ' place at ', keyword('WL compiler optimization contest')],
       [],
-      ['I landed my first internship at ', keyword('Roadpost'), ' where I'],
-      [' - gained experience with ', keyword('VB.NET'), ' and ', keyword('ExtJS')],
+      ['I landed my first internship at ', keyword('Roadpost')],
+      [' - I gained experience with ', keyword('VB.NET'), ' and ', keyword('ExtJS')],
       [],
       ['I started'],
       [' - learning ', keyword('shell scripting')],
@@ -352,8 +372,12 @@ var resume = [
       HORIZONTAL_LINE,
       ['I achieved ', keyword('6th'), ' place at ', keyword('UW local ACM programming contest')],
       [],
-      ['I landed my first internship in the States with ', keyword('Oracle'), ' where I'],
-      [' - developed a SQL-like query editor with intellisense support'],
+      ['I interned at ', keyword('NexJ')],
+      [' - I helped maintain their CRM framework'],
+      [' - I gained extensive debugging skills'],
+      [],
+      ['I landed my first internship in the States with ', keyword('Oracle')],
+      [' - I developed a SQL-like query editor with intellisense support'],
       ['   that runs in browswer'],
       [],
       ['I started'],
@@ -367,9 +391,9 @@ var resume = [
       HORIZONTAL_LINE,
       ['I achieved ', keyword('12th'), ' place at ', keyword('UW local ACM programming contest')],
       [],
-      ['I finally landed an internship with ', keyword('Google'), ' where I'],
-      [' - developed infinite scroll for GWT cell table'],
-      [' - gained experience with ', keyword('GWT')],
+      ['I finally landed an internship with ', keyword('Google')],
+      [' - I developed infinite scroll for GWT cell table'],
+      [' - I gained experience with ', keyword('GWT')],
       [],
       ['I started using ', keyword('IntelliJ')],
       [' - it became my primary IDE'],
@@ -386,9 +410,9 @@ var resume = [
     year: 2013,
     story: [
       HORIZONTAL_LINE,
-      ['I interned at ', keyword('Facebook'), ' where I'],
-      [' - developed UI components for fitness collection'],
-      [' - was lucky enough to be selected to present'],
+      ['I interned at ', keyword('Facebook')],
+      [' - I developed UI components for fitness collection'],
+      [' - I was lucky enough to be selected to present'],
       ['   my Hackathon project to Zuck in person'],
       [],
       ['I co-founded ', keyword('DaiGouGe')],
@@ -396,9 +420,11 @@ var resume = [
       ['   have products directly shipped to them from taobao.com'],
       [' - we were one of the ', keyword('VeloCity'), ' Demo Day finalists'],
       [],
-      ['I landed my last internship at ', keyword('Microsoft'), ' where I'],
-      [' - helped integrate a data source into Bing search result page'],
-      [' - gained experience with ', keyword('TypeScript')]
+      ['I landed my last internship at ', keyword('Microsoft')],
+      [' - I helped integrate a data source into Bing search result page'],
+      [' - I gained experience with ', keyword('TypeScript')],
+      [],
+      ['I started developing on ', keyword('Node.js')]
     ]
   },
   {
@@ -408,134 +434,93 @@ var resume = [
       ['This is the year I\'m graduating'],
       [],
       ['I took ', keyword('CS 444: Compiler Construction')],
-      [' - I gained a lot of practical experience with ', keyword('Scala')],
+      [' - I gained a lot of working experience with ', keyword('Scala')],
       [],
       ['I started using ', keyword('Dart')]
     ]
   }
 ];
 
-var r = toLines(resume);
-
-function toLines(resume) {
-  var lines = [];
-
-  for (var i = 0, count = resume.length; i < count; i++) {
-    var item = resume[i];
-    var year = item.year;
-    var highlights = item.story;
-    for (var j = 0, highlighCount = highlights.length; j < highlighCount; j++) {
-      lines.push({ year: year, line: highlights[j] });
-    }
-  }
-
-  return lines;
-}
-
+// main
 (function() {
-  var terminal = new Terminal();
-  // Print prologue
+  var input = new RawInputStream(stdin);
+  var printer = new ResumePrinter(stdout);
+
   var prologue = [
-    // 'Hi, you are reading \u001b[36mShengMin\u001b[39m\'s interactive resume.',
-    // 'Please remember the following control keys:',
-    // '\u001b[32mScroll down\u001b[39m: \u001b[33m<Down>\u001b[39m or \u001b[33m<Right>\u001b[39m',
-    // '\u001b[32mScroll up\u001b[39m: \u001b[33m<Up>\u001b[39m or \u001b[33m<Left>\u001b[39m',
-    // '\u001b[32mQuit\u001b[39m: \u001b[33m<Ctrl>\u001b[39m + \u001b[33mc\u001b[39m',
-    // 'Press \u001b[33m<Enter>\u001b[39m to start'
+    'Hi, I\'m ShengMin\'s assistant. You are reading his terminal version of resume.',
+    'Please remember the following control keys:',
+    '\u001b[32mScroll down\u001b[39m: \u001b[33m<Down>\u001b[39m',
+    '\u001b[32mScroll up\u001b[39m: \u001b[33m<Up>\u001b[39m',
+    '\u001b[32mQuit\u001b[39m: \u001b[33m<Ctrl>\u001b[39m + \u001b[33mc\u001b[39m',
+    'Press \u001b[33m<Enter>\u001b[39m to start'
   ].join(os.EOL);
 
-  var prologueIndex = 0;
-  function printPrologue() {
-    if (prologueIndex === prologue.length) {
-      // Done printing prologue, wait for user to press <Enter>
-      clearInterval(prologueTimer);
-      terminal.on('keypress', onEnterPressed);
-    } else {
-      terminal.write(prologue.charAt(prologueIndex++));
+  // Converts the resume to format suitable for {@link ResumePrinter}
+  function toLines(resume) {
+    var lines = [];
+
+    for (var i = 0, count = resume.length; i < count; i++) {
+      var item = resume[i];
+      var year = item.year;
+      var highlights = item.story;
+      for (var j = 0, highlighCount = highlights.length; j < highlighCount; j++) {
+        lines.push({ year: year, line: highlights[j] });
+      }
     }
+
+    return lines;
   }
 
-  var prologueTimer = setInterval(printPrologue, 50);
+  var resumeLines = toLines(resume);
+
+  // Print prologue
+  (function() {
+    var index = 0;
+    var print = function() {
+      if (index === prologue.length) {
+        // Done printing prologue, wait for user to press <Enter>
+        clearInterval(timer);
+        input.events.on('keypress', onEnterPressed);
+      } else {
+        printer.write(prologue[index++]);
+      }
+    };
+
+    var timer = setInterval(print, 50);
+  })();
 
   function onEnterPressed(key) {
     if (key.name === 'return' || key.name === 'line-feed') {
       // User has pressed <Enter>, start outputing the resume
-      terminal.removeListener('keypress', onEnterPressed);
-      terminal.clearScreen();
-      printScreen(0);
-      terminal.on('keypress', onKeyPressed);
+      input.events.removeListener('keypress', onEnterPressed);
+      printer.clearScreen();
+      printer.printScreen(0, resumeLines);
+      input.events.on('keypress', onKeyPressed);
     }
   }
 
-  var startIndex = 0;
-  var terminalRowCount = stdout.rows - 1;
 
-  function onKeyPressed(key) {
-    if (key.name === 'up') {
-      if (startIndex > 0) {
-        startIndex--;
-        terminal.clearScreen();
-        printScreen(startIndex);
-      }
-    } else if (key.name === 'down') {
-      if (startIndex < r.length - 1) {
-        startIndex++;
-        terminal.clearScreen();
-        printScreen(startIndex);
-      } else {
-        terminal.clearScreen();
-        stdin.pause();
-      }
+  var onKeyPressed = (function() {
+    var startIndex = 0;
 
+    return function(key) {
+      if (key.name === 'up') {
+        if (startIndex > 0) {
+          startIndex--;
+          printer.clearScreen();
+          printer.printScreen(startIndex, resumeLines);
+        }
+      } else if (key.name === 'down') {
+        if (startIndex < resumeLines.length - 1) {
+          startIndex++;
+          printer.clearScreen();
+          printer.printScreen(startIndex, resumeLines);
+        } else {
+          printer.clearScreen();
+          stdin.pause();
+        }
+      }
     }
-  }
+  })();
+
 })();
-
-
-function createLine(result, _) {
-  result.push(blueText('\u2500'));
-  return result;
-}
-
-var colors = [yellowText, greenText, cyanText, blueText, cyanText, greenText];
-function printScreen(startIndex) {
-  var line = new Range(0, stdout.columns).foldLeft([], createLine);
-
-  var header = [
-    line,
-    [' ', yellowText('Name:'), '         ShengMin Zhang'],
-    [' ', greenText('Email:'), '        me@shengmin.me'],
-    [' ', cyanText('GitHub:'), '       https://github.com/shengmin'],
-    [' ', blueText('HackerRank:'), '   https://www.hackerrank.com/shengmin'],
-    line
-  ];
-
-  header.forEach(function(line) {
-    printFormattedLine(line);
-  });
-
-  var lastLineYear = -1;
-  for (var i = startIndex, j = 0; j < stdout.rows - 1 - header.length && i < r.length; i++, j++) {
-    var item = r[i];
-    var line = item.line;
-    var year = item.year;
-    var color = colors[year % colors.length];
-    if (line instanceof HorizontalLine) {
-      line = new Range(0, stdout.columns - 8).foldLeft([], function(result, _) {
-        result.push(color('\u2500'));
-        return result;
-      })
-    }
-
-    if (year != lastLineYear) {
-      line = [' ', underlineText(boldText(color(item.year))), ' ', boldText(color('\u2502')), ' '].concat(line);
-      lastLineYear = year;
-    } else {
-      line = ['      ', boldText(color('\u2502')), ' '].concat(line);
-    }
-    printFormattedLine(line, color);
-  }
-}
-
-
-
